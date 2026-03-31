@@ -1,3 +1,4 @@
+import os  # <--- MANCAVA QUESTA RIGA!
 import random
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
