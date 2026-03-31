@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Break The Ice AI</title>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: white;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Contenitore dei rettangoli */
+        #colors-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 90%;
+            max-width: 400px;
+            margin-bottom: 30px;
+        }
+
+        .color-box {
+            height: 120px;
+            border-radius: 15px;
+            opacity: 0.3; /* Spenti di base */
+            transition: all 0.1s;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        /* Colori vivi */
+        #box-rosso { background-color: #ff4757; box-shadow: 0 0 20px #ff4757; }
+        #box-blu { background-color: #2e86de; box-shadow: 0 0 20px #2e86de; }
+        #box-verde { background-color: #2ed573; box-shadow: 0 0 20px #2ed573; }
+        #box-giallo { background-color: #ffa502; box-shadow: 0 0 20px #ffa502; }
+
+        .active {
+            opacity: 1 !important;
+            transform: scale(1.05);
+            border: 3px solid white;
+        }
+
+        #result {
+            font-size: 2rem;
+            font-weight: 900;
+            text-align: center;
+            text-transform: uppercase;
+            min-height: 100px;
+            padding: 0 20px;
+            margin: 20px 0;
+        }
+
+        #btn-spin {
+            padding: 20px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            background: white;
+            color: black;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 15px rgba(255,255,255,0.2);
+        }
+
+        .phase-social {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888) !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body>
+
+<div id="result">TAP TO START</div>
+
+    <div id="colors-container">
+        <div id="box-rosso" class="color-box"></div>
+        <div id="box-blu" class="color-box"></div>
+        <div id="box-verde" class="color-box"></div>
+        <div id="box-giallo" class="color-box"></div>
+    </div>
+
+    
+<div id="phase-indicator">
+    LEVEL: <span id="level-num">1</span> / 3
+</div>
+<button id="btn-spin" onclick="playGame('man')">SPIN THE WHEEL</button>
+
+<script>
+    let currentPhase = 1;
+const colorIds = ['box-rosso', 'box-blu', 'box-verde', 'box-giallo'];
+    async function playGame(gender) {
+        const btn = document.getElementById('btn-spin');
+        const resultDiv = document.getElementById('result');
+        const levelSpan = document.getElementById('level-num');
+        const boxes = colorIds.map(id => document.getElementById(id));
+        
+        btn.disabled = true;
+        resultDiv.innerText = "ELABORANDO SFIDA...";
+
+        // Animazione luci... (lascia quella di prima)
+        let counter = 0;
+        const interval = setInterval(() => {
+            boxes.forEach(b => b.classList.remove('active'));
+            boxes[counter % 4].classList.add('active');
+            counter++;
+        }, 80); // Più veloce per dare adrenalina
+
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/spin/${gender}?phase=${currentPhase}`);
+            const data = await response.json();
+
+            setTimeout(() => {
+                clearInterval(interval);
+                boxes.forEach(b => b.classList.remove('active'));
+                document.getElementById(`box-${data.color}`).classList.add('active');
+
+                resultDiv.style.color = data.color_hex;
+                resultDiv.innerHTML = data.action;
+
+                // --- LOGICA AVANZAMENTO FASI (Testi in inglese) ---
+if (currentPhase === 1) {
+    currentPhase = 2;
+    btn.innerText = "NEXT LEVEL: SMART 🔥";
+    btn.style.background = "#ffa502"; 
+} else if (currentPhase === 2) {
+    currentPhase = 3;
+    btn.innerText = "FINAL LEVEL: SOCIAL 📱";
+    btn.classList.add('phase-social'); 
+} else {
+    currentPhase = 1;
+    btn.innerText = "RESTART GAME 🔄";
+    btn.classList.remove('phase-social');
+    btn.style.background = "white";
+}
+                
+                levelSpan.innerText = currentPhase;
+                btn.disabled = false;
+            }, 2500);
+
+        } catch (e) {
+            clearInterval(interval);
+            btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Break The Ice - Spin!</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; text-align: center; background: #121212; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        #wheel-container { position: relative; width: 300px; height: 300px; border: 10px solid #333; border-radius: 50%; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); }
+        .segment { position: absolute; width: 50%; height: 50%; transform-origin: 100% 100%; border: 1px solid #121212; }
+        #red { background: #FF0000; transform: rotate(0deg) skewY(-0deg); }
+        #blue { background: #0000FF; transform: rotate(90deg) skewY(-0deg); }
+        #green { background: #008000; transform: rotate(180deg) skewY(-0deg); }
+        #yellow { background: #FFFF00; transform: rotate(270deg) skewY(-0deg); }
+        #pointer { width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 30px solid white; position: absolute; top: -20px; z-index: 10; }
+        button { margin-top: 50px; padding: 15px 40px; font-size: 1.2rem; background: #00d1b2; border: none; border-radius: 50px; color: white; cursor: pointer; font-weight: bold; }
+        #result { margin-top: 30px; font-size: 1.5rem; min-height: 2em; }
+    </style>
+</head>
+<body>
+    <h1>GIOCA CON ME!</h1>
+    <div id="pointer"></div>
+    <div id="wheel-container" id="wheel">
+        <div class="segment" id="red"></div>
+        <div class="segment" id="blue"></div>
+        <div class="segment" id="green"></div>
+        <div class="segment" id="yellow"></div>
+    </div>
+    <div id="result">Clicca per iniziare...</div>
+    <button onclick="spin()">GIRA LA RUOTA</button>
+
+    <script>
+        let currentRotation = 0;
+
+        async function spin() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerText = "L'AI sta scegliendo...";
+            
+            try {
+                // Chiamata al tuo backend Python (localhost per ora)
+                const response = await fetch('http://127.0.0.1:8000/api/spin/man');
+                const data = await response.json();
+
+                // Logica rotazione (3 giri completi + angolo basato sul colore)
+                const colorAngles = { "rosso": 0, "giallo": 90, "verde": 180, "blu": 270 };
+                const extraAngle = 360 - colorAngles[data.color];
+                currentRotation += (360 * 5) + extraAngle; // 5 giri di "hype"
+                
+                document.getElementById('wheel-container').style.transform = `rotate(${currentRotation}deg)`;
+
+                // Aspetta la fine dell'animazione (4s)
+                setTimeout(() => {
+                    resultDiv.style.color = data.color_hex;
+                    resultDiv.innerHTML = `<strong>${data.action.toUpperCase()}</strong> il colore <strong>${data.color.toUpperCase()}</strong>!`;
+                }, 4000);
+
+            } catch (error) {
+                resultDiv.innerText = "Errore: il server è spento?";
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
