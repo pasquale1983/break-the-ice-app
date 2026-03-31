@@ -104,7 +104,7 @@ const colorIds = ['box-rosso', 'box-blu', 'box-verde', 'box-giallo'];
         const boxes = colorIds.map(id => document.getElementById(id));
         
         btn.disabled = true;
-        resultDiv.innerText = "ELABORANDO SFIDA...";
+        resultDiv.innerText = "CHOOSING...";
 
         // Animazione luci... (lascia quella di prima)
         let counter = 0;
@@ -115,7 +115,7 @@ const colorIds = ['box-rosso', 'box-blu', 'box-verde', 'box-giallo'];
         }, 80); // Più veloce per dare adrenalina
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/spin/${gender}?phase=${currentPhase}`);
+          const response = await fetch("/api/spin/user?phase=" + currentPhase);
             const data = await response.json();
 
             setTimeout(() => {
