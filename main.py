@@ -8,6 +8,17 @@ from groq import Groq
 # 1. Inizializzazione App
 app = FastAPI()
 
+# LEGGI LA CHIAVE DA RENDER
+api_key = os.environ.get("GROQ_API_KEY")
+
+if not api_key:
+    print("ATTENZIONE: GROQ_API_KEY non trovata nelle variabili di ambiente!")
+    # Mettiamo una stringa vuota per non far crashare l'avvio, 
+    # ma l'IA darà errore finché non aggiungi la chiave su Render.
+    api_key = "" 
+
+client = Groq(api_key=api_key)
+
 # 2. Middleware CORS
 app.add_middleware(
     CORSMiddleware,
@@ -19,10 +30,7 @@ app.add_middleware(
 # 3. File Statici
 app.mount("/static", StaticFiles(directory="."), name="static")
 
-# 4. Client Groq - METTI LA TUA CHIAVE QUI
-# Questa riga dice a Render: "Usa la chiave che ti ho appena dato nel pannello Environment"
-api_key = os.environ.get("GROQ_API_KEY")
-client = Groq(api_key=api_key)
+
 
 COLORS = {
     "rosso": "#FF4757",
